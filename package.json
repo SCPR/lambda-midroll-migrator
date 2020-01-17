@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/SCPR/lambda-midroll-migrator/issues"
   },
-  "homepage": "https://github.com/SCPR/lambda-midroll-migrator#readme"
+  "homepage": "https://github.com/SCPR/lambda-midroll-migrator#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0"
+  }
 }
