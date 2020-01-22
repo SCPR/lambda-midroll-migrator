@@ -35,6 +35,13 @@ const getMegaphoneMidrolls = (title) => {
     });
 }
 
+// Transform the midrolls from seconds to HH:MM:SS
+const transformMidrolls = (midrollArray) => {
+    return midrollArray.map((insertionPoint) => {
+        return new Date(insertionPoint * 1000).toISOString().substr(11, 8);
+    });
+}
+
 // Get an episode list from omny studio and find the first episode that is missing midrolls
 omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, response, body) => {
     if (err) {
@@ -53,7 +60,8 @@ omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, respo
             console.log({ clip: clip.Title });
             // Find the equivalent episode in megaphone and check if it has a midroll
             const midrolls = await getMegaphoneMidrolls(clip.Title);
-            console.log({ midrolls });
+            const transformedMidrolls = transformMidrolls(midrolls);
+            console.log({ transformedMidrolls });
         } else {
             index++;
         }
