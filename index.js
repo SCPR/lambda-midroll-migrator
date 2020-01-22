@@ -20,20 +20,23 @@ const omnyStudioManagementApi = request.defaults({
 });
 
 const getMegaphoneMidrolls = (title) => {
-    megaphoneApi.get(MEGAPHONE_API_PODCAST_URL, (err, response, body) => {
-        if (err) {
-            console.warn(err);
-            return;
-        }
+    return new Promise((resolve, reject) => {
+        megaphoneApi.get(MEGAPHONE_API_PODCAST_URL, (err, response, body) => {
+            if (err) {
+                console.warn(err);
+                reject(err);
+                return;
+            }
 
-        const episodes = JSON.parse(body);
-        const episode = episodes.filter(episode => episode.title.includes(title));
-        console.log({ episodeWeGotFromMegaphone: episode });
+            const episodes = JSON.parse(body);
+            const episode = episodes.filter(episode => episode.title.includes(title))[0];
+            resolve(episode.insertionPoints);
+        });
     });
 }
 
 // Get an episode list from omny studio and find the first episode that is missing midrolls
-omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, (err, response, body) => {
+omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, response, body) => {
     if (err) {
         console.warn(err);
         return;
@@ -49,7 +52,8 @@ omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, (err, response, b
             console.log('Found the first appearance of a flip without midroll');
             console.log({ clip: clip.Title });
             // Find the equivalent episode in megaphone and check if it has a midroll
-            getMegaphoneMidrolls(clip.Title);
+            const midrolls = await getMegaphoneMidrolls(clip.Title);
+            console.log({ midrolls });
         } else {
             index++;
         }
