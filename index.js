@@ -42,6 +42,28 @@ const transformMidrolls = (midrollArray) => {
     });
 }
 
+const updateOmnyEpisodeWithMidrolls = (clipId, midrolls) => {
+    return new Promise((resolve, reject) => {
+        omnyStudioManagementApi.post({
+            url: `https://api.omnystudio.com/v0/clips/${clipId}`,
+            body: {
+                "Monetization": {
+                  "MidRolls": midrolls
+                }
+            },
+            json: true
+        }, (err, response, body) => {
+            if (err) {
+                reject(err);
+                console.warn(err);
+                return;
+            }
+            console.log(body);
+            resolve(body);
+        });
+    });
+}
+
 // Get an episode list from omny studio and find the first episode that is missing midrolls
 omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, response, body) => {
     if (err) {
@@ -62,6 +84,7 @@ omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, respo
             const midrolls = await getMegaphoneMidrolls(clip.Title);
             const transformedMidrolls = transformMidrolls(midrolls);
             console.log({ transformedMidrolls });
+            updateOmnyEpisodeWithMidrolls(clip.Id, transformedMidrolls);
         } else {
             index++;
         }
