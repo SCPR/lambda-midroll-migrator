@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const MEGAPHONE_API_PODCAST_URL = process.env.MEGAPHONE_API_PODCAST_URL || "";
 const MEGAPHONE_API_TOKEN = process.env.MEGAPHONE_API_TOKEN || "";
-const OMNYSTUDIO_CONSUMER_API_PODCAST_URL = process.env.OMNYSTUDIO_CONSUMER_API_PODCAST_URL || "";
+const OMNYSTUDIO_MANAGEMENT_API_PODCAST_URL = process.env.OMNYSTUDIO_MANAGEMENT_API_PODCAST_URL || "";
 const OMNYSTUDIO_MANAGEMENT_API_TOKEN = process.env.OMNYSTUDIO_MANAGEMENT_API_TOKEN || "";
 
 const megaphoneApi = request.defaults({
@@ -12,7 +12,6 @@ const megaphoneApi = request.defaults({
     }
 });
 
-const omnyStudioConsumerApi = request;
 const omnyStudioManagementApi = request.defaults({
     headers: {
         'Authorization': `OmnyToken ${OMNYSTUDIO_MANAGEMENT_API_TOKEN}`
@@ -35,11 +34,21 @@ const getMegaphoneMidrolls = (title) => {
     });
 }
 
+const uniqueMidrolls = (midrolls) => {
+    if (midrolls) {
+        return [...new Set(midrolls)];
+    } else {
+        return [];
+    }
+}
+
 // Transform the midrolls from seconds to HH:MM:SS
 const transformMidrolls = (midrollArray) => {
-    return midrollArray.map((insertionPoint) => {
+    const transformedMidrolls = midrollArray.map((insertionPoint) => {
         return new Date(insertionPoint * 1000).toISOString().substr(11, 8);
     });
+
+    return uniqueMidrolls(transformedMidrolls);
 }
 
 const updateOmnyEpisodeWithMidrolls = (clipId, midrolls) => {
@@ -65,7 +74,7 @@ const updateOmnyEpisodeWithMidrolls = (clipId, midrolls) => {
 }
 
 // Get an episode list from omny studio and find the first episode that is missing midrolls
-omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, response, body) => {
+omnyStudioManagementApi.get(OMNYSTUDIO_MANAGEMENT_API_PODCAST_URL, async (err, response, body) => {
     if (err) {
         console.warn(err);
         return;
@@ -80,6 +89,7 @@ omnyStudioConsumerApi.get(OMNYSTUDIO_CONSUMER_API_PODCAST_URL, async (err, respo
             clip = parsedBody.Clips[index];
             console.log('Found the first appearance of a flip without midroll');
             console.log({ clip: clip.Title });
+            console.log({ MidRolls: parsedBody.Clips[index].Monetization.MidRolls });
             // Find the equivalent episode in megaphone and check if it has a midroll
             const midrolls = await getMegaphoneMidrolls(clip.Title);
             const transformedMidrolls = transformMidrolls(midrolls);
