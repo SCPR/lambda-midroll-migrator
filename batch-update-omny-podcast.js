@@ -38,7 +38,13 @@ console.log(megaphoneEpisodesWithMidroll.length);
 const matchedEpisodes = [];
 const unmatchedEpisodes = [];
 megaphoneEpisodesWithMidroll.forEach(megaphoneEpisode => {
-    const matchingOmnyEpisode = omnyStudioEpisodes.Clips.filter(episode => megaphoneEpisode.title.includes(episode.Title));
+    const matchingOmnyEpisode = omnyStudioEpisodes.Clips.filter(episode => {
+        if (megaphoneEpisode.title.includes(episode.Title) && episode.Monetization.MidRolls.length === 0) {
+            return true;
+        } else {
+            return false;
+        }
+    });
     if (matchingOmnyEpisode.length > 0) {
         matchedEpisodes.push({ megaphoneEpisode: megaphoneEpisode, omnyEpisode: matchingOmnyEpisode[0] });
     } else {
