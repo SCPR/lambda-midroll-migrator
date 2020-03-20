@@ -21,12 +21,12 @@ const omnyStudioManagementApi = request.defaults({
 
 // Get all episoes of a program from Omny Studio
 
-const omnyStudioEpisodes = require('./airtalk-omnystudio-stitched.json');
+const omnyStudioEpisodes = require('./filmweek-omnystudio.json');
 console.log(omnyStudioEpisodes.Clips.length);
 
 // Get all episodes of a program from Megaphone
 
-const megaphoneEpisodes = require('./airtalk-megaphone.json');
+const megaphoneEpisodes = require('./filmweek-megaphone.json');
 console.log(megaphoneEpisodes.length);
 
 // Filter to only the episodes that have midroll
@@ -65,6 +65,8 @@ const updateOmnyEpisodeWithMidrolls = (clipId, midrolls, title) => {
                 url: `https://api.omnystudio.com/v0/clips/${clipId}`,
                 body: {
                     "Monetization": {
+                      "PreRoll": true,
+                      "PostRoll": true,
                       "MidRolls": midrolls
                     }
                 },
@@ -82,21 +84,13 @@ const updateOmnyEpisodeWithMidrolls = (clipId, midrolls, title) => {
     });
 }
 
-const uniqueMidrolls = (midrolls) => {
-    if (midrolls) {
-        return [...new Set(midrolls)];
-    } else {
-        return [];
-    }
-}
-
 // Transform the midrolls from seconds to HH:MM:SS
 const transformMidrolls = (midrollArray) => {
     const transformedMidrolls = midrollArray.map((insertionPoint) => {
         return new Date(insertionPoint * 1000).toISOString().substr(11, 8);
     });
 
-    return uniqueMidrolls(transformedMidrolls);
+    return transformedMidrolls;
 }
 
 const testEpisodeList = matchedEpisodes;
